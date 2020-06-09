@@ -8,7 +8,7 @@ from inpaint_model import InpaintCAModel
 
 
 def multigpu_graph_def(model, FLAGS, data, gpu_id=0, loss_type='g'):
-    with tf.device('/cpu:0'):
+    with tf.device('/cpu:1'):
         images = data.data_pipeline(FLAGS.batch_size)
     if gpu_id == 0 and loss_type == 'g':
         _, _, losses = model.build_graph_with_losses(
@@ -25,6 +25,7 @@ def multigpu_graph_def(model, FLAGS, data, gpu_id=0, loss_type='g'):
 
 
 if __name__ == "__main__":
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
     # training data
     FLAGS = ng.Config('inpaint.yml')
     img_shapes = FLAGS.img_shapes
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     )
     # train generator with primary trainer
     # trainer = ng.train.Trainer(
-    trainer = ng.train.MultiGPUTrainer(
+    trainer = ng.train.Trainer(
         num_gpus=FLAGS.num_gpus_per_job,
         optimizer=g_optimizer,
         var_list=g_vars,
